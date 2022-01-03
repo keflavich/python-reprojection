@@ -14,7 +14,6 @@ from numpy.testing import assert_allclose
 
 from ..high_level import reproject_interp
 from ...tests.helpers import array_footprint_to_hdulist
-import matplotlib.pyplot as plt
 # TODO: add reference comparisons
 
 DATA = os.path.join(os.path.dirname(__file__), '..', '..', 'tests', 'data')
@@ -518,15 +517,15 @@ def test_identity_with_offset():
 
     assert_allclose(expected, array_out, atol=1e-10)
 
+
 @pytest.mark.parametrize('parallel', [True, False])
-@pytest.mark.parametrize('block_size', [ [10,10], [100,100], [500,500], [100,500], [500,100]  ])
+@pytest.mark.parametrize('block_size', [[10, 10], [100, 100], [500, 500], [100, 500], [500, 100]])
 def test_blocked_against_single(parallel, block_size):
     hdu1 = fits.open(get_pkg_data_filename('galactic_center/gc_2mass_k.fits'))[0]
     hdu2 = fits.open(get_pkg_data_filename('galactic_center/gc_msx_e.fits'))[0]
 
     array_reference = reproject_interp(hdu2, hdu1.header, parallel=False, block_size=hdu1.shape)
 
-    
     array_test = reproject_interp(hdu2, hdu1.header, parallel=parallel)
 
     np.testing.assert_allclose(array_test, array_reference)
