@@ -91,7 +91,6 @@ def reproject_interp(input_data, output_projection, shape_out=None, hdu_in=0,
     if isinstance(order, str):
         order = ORDER[order]
 
-    parallel = True
     # if either of these are not default, it means a blocked method must be used
     if block_size is not None or parallel is not False:
         # if parallel is set but block size isn't, we'll choose

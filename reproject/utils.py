@@ -6,6 +6,8 @@ from astropy.io import fits
 from astropy.io.fits import CompImageHDU, HDUList, Header, ImageHDU, PrimaryHDU
 from astropy.wcs import WCS
 from astropy.wcs.wcsapi import BaseHighLevelWCS
+from astropy.wcs.wcsapi import SlicedLowLevelWCS
+from astropy.wcs.wcsapi.high_level_wcs_wrapper import HighLevelWCSWrapper
 
 __all__ = ['parse_input_data', 'parse_input_shape', 'parse_input_weights',
            'parse_output_projection']
@@ -169,14 +171,13 @@ def reproject_blocked(reproject_func, array_in, wcs_in, shape_out, wcs_out, bloc
         for jmin in range(0, output_array.shape[1], block_size[1]):
             jmax = min(jmin + block_size[1], output_array.shape[1])
             shape_out_sub = (imax - imin, jmax - jmin)
-            #if the output has more than two dims, just append them on the end of the shape to it still matches
-            #the WCS
+            # if the output has more than two dims, just append them on the end of the
+            # shape to it still matches the base WCS
             for dim in range(2, len(output_array.shape)):
                 shape_out_sub = shape_out_sub + (output_array.shape[dim],)
 
-            wcs_out_sub = wcs_out.deepcopy()
-            wcs_out_sub.wcs.crpix[0] -= jmin
-            wcs_out_sub.wcs.crpix[1] -= imin
+            slices = [slice(jmin, jmax), slice(imin, imax)]
+            wcs_out_sub = HighLevelWCSWrapper(SlicedLowLevelWCS(wcs_out, slices=slices))
 
             if proc_pool is None:
                 # if sequential input data and reinsert block into main array immediately
