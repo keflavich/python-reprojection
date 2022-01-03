@@ -169,6 +169,11 @@ def reproject_blocked(reproject_func, array_in, wcs_in, shape_out, wcs_out, bloc
         for jmin in range(0, output_array.shape[1], block_size[1]):
             jmax = min(jmin + block_size[1], output_array.shape[1])
             shape_out_sub = (imax - imin, jmax - jmin)
+            #if the output has more than two dims, just append them on the end of the shape to it still matches
+            #the WCS
+            for dim in range(2, len(output_array.shape)):
+                shape_out_sub = shape_out_sub + (output_array.shape[dim],)
+
             wcs_out_sub = wcs_out.deepcopy()
             wcs_out_sub.wcs.crpix[0] -= jmin
             wcs_out_sub.wcs.crpix[1] -= imin
