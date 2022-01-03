@@ -176,7 +176,7 @@ def reproject_blocked(reproject_func, array_in, wcs_in, shape_out, wcs_out, bloc
             for dim in range(2, len(output_array.shape)):
                 shape_out_sub = shape_out_sub + (output_array.shape[dim],)
 
-            slices = [slice(jmin, jmax), slice(imin, imax)]
+            slices = [slice(imin, imax), slice(jmin, jmax)]
             wcs_out_sub = HighLevelWCSWrapper(SlicedLowLevelWCS(wcs_out, slices=slices))
 
             if proc_pool is None:
