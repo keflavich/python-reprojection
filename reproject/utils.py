@@ -141,10 +141,18 @@ def parse_output_projection(output_projection, shape_out=None, output_array=None
 def _block(reproject_func, array_in, wcs_in, wcs_out_sub, shape_out, i_range, j_range,
            return_footprint):
     # i and j range must be passed through for multiprocessing to know where to reinsert patches
-    res = reproject_func(array_in, wcs_in, wcs_out_sub,
+    result = reproject_func(array_in, wcs_in, wcs_out_sub,
                          shape_out=shape_out, return_footprint=return_footprint)
 
-    return {'i': i_range, 'j': j_range, 'block': res}
+    res_arr = None
+    res_fp = None
+
+    if return_footprint:
+        res_arr, res_fp = result
+    else:
+        res_arr = result
+
+    return {'i': i_range, 'j': j_range, 'res_arr': res_arr, 'res_fp': res_fp}
 
 
 def reproject_blocked(reproject_func, array_in, wcs_in, shape_out, wcs_out, block_size,
@@ -187,9 +195,9 @@ def reproject_blocked(reproject_func, array_in, wcs_in, shape_out, wcs_out, bloc
                                          return_footprint=return_footprint,
                                          j_range=(jmin, jmax), i_range=(imin, imax))
 
-                output_array[imin:imax, jmin:jmax] = completed_block['block'][0][:]
+                output_array[imin:imax, jmin:jmax] = completed_block['res_arr'][:]
                 if return_footprint:
-                    output_footprint[imin:imax, jmin:jmax] = completed_block['block'][1][:]
+                    output_footprint[imin:imax, jmin:jmax] = completed_block['res_fp'][:]
 
                 sequential_blocks_done += 1
             else:
@@ -210,10 +218,10 @@ def reproject_blocked(reproject_func, array_in, wcs_in, shape_out, wcs_out, bloc
             i_range = completed_block['i']
             j_range = completed_block['j']
             output_array[i_range[0]:i_range[1], j_range[0]:j_range[1]] \
-                = completed_block['block'][0][:]
+                = completed_block['res_arr'][:]
 
             if return_footprint:
-                footprint_block = completed_block['block'][1][:]
+                footprint_block = completed_block['res_fp'][:]
                 output_footprint[i_range[0]:i_range[1], j_range[0]:j_range[1]] = footprint_block
 
             completed_future_count += 1
