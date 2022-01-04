@@ -101,7 +101,7 @@ def reproject_interp(input_data, output_projection, shape_out=None, hdu_in=0,
 
         # given we have cases where modern system have many cpu cores some sanity clamping is
         # to avoid 0 length block sizes when num_cpu_cores is greater than the side of the image
-        for dim_idx in range(len(shape_out)):
+        for dim_idx in range(min(len(shape_out), 2)):
             if block_size[dim_idx] == 0:
                 block_size[dim_idx] = shape_out[dim_idx]
 

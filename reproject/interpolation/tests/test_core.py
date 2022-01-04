@@ -535,11 +535,34 @@ def test_blocked_against_single(parallel, block_size):
 
 
 def test_blocked_corner_cases():
-    hdu1 = fits.open(get_pkg_data_filename('galactic_center/gc_2mass_k.fits'))[0]
-    hdu2 = fits.open(get_pkg_data_filename('galactic_center/gc_msx_e.fits'))[0]
 
-    array_reference = reproject_interp(hdu2, hdu1.header, return_footprint=False)
+    """
+    When doing blocked there are a few checks designed to sanity clamp/preserve
+    values. Even though the blocking process only tiles in a 2d manner 3d information
+    about the image needs to be preserved and transformed correctly. Additonally
+    when automatically determining block size based on CPU cores zeros can appear on
+    machines where num_cores > x or y dim of output image. So make sure it correctly
+    functions when 0 block size goes in
+    """
 
-    array_test = reproject_interp(hdu2, hdu1.header, parallel=True, return_footprint=False)
+    # Read in the input cube
+    hdu_in = fits.open(os.path.join(DATA, 'equatorial_3d.fits'))[0]
+
+    # Define the output header - this should be the same for all versions of
+    # this test to make sure we can use a single reference file.
+    header_out = hdu_in.header.copy()
+    header_out['NAXIS1'] = 10
+    header_out['NAXIS2'] = 9
+    header_out['CTYPE1'] = 'GLON-SIN'
+    header_out['CTYPE2'] = 'GLAT-SIN'
+    header_out['CRVAL1'] = 163.16724
+    header_out['CRVAL2'] = -15.777405
+    header_out['CRPIX1'] = 6
+    header_out['CRPIX2'] = 5
+
+    array_reference = reproject_interp(hdu_in, header_out, return_footprint=False)
+
+    array_test = reproject_interp(hdu_in, header_out, parallel=True,
+                                  block_size=[0, 4], return_footprint=False)
 
     np.testing.assert_allclose(array_test, array_reference, equal_nan=True, verbose=True)
