@@ -6,6 +6,7 @@ import random
 import numpy as np
 import pytest
 from astropy.wcs import WCS
+from astropy.io import fits
 from astropy.io.fits import Header
 
 from numpy.testing import assert_allclose
@@ -172,7 +173,8 @@ class TestReprojectAndCoAdd():
         assert_allclose(array - np.mean(array),
                         self.array - np.mean(self.array), atol=ATOL)
 
-    def test_coadd_with_weights(self, reproject_function):
+    @pytest.mark.parametrize('mode', ['arrays', 'filenames', 'hdus'])
+    def test_coadd_with_weights(self, tmpdir, reproject_function, mode):
 
         # Make sure that things work properly when specifying weights
 
@@ -183,7 +185,19 @@ class TestReprojectAndCoAdd():
         weight2 = weight1[:, ::-1]
 
         input_data = [(array1, self.wcs), (array2, self.wcs)]
-        input_weights = [weight1, weight2]
+
+        if mode == 'arrays':
+            input_weights = [weight1, weight2]
+        elif mode == 'filenames':
+            filename1 = tmpdir.join('weight1.fits').strpath
+            filename2 = tmpdir.join('weight2.fits').strpath
+            fits.writeto(filename1, weight1)
+            fits.writeto(filename2, weight2)
+            input_weights = [filename1, filename2]
+        elif mode == 'hdus':
+            hdu1 = fits.ImageHDU(weight1)
+            hdu2 = fits.ImageHDU(weight2)
+            input_weights = [hdu1, hdu2]
 
         array, footprint = reproject_and_coadd(input_data, self.wcs,
                                                shape_out=self.array.shape,
@@ -225,7 +239,10 @@ def test_coadd_solar_map():
     # and combine them into a single one. This uses weight maps that are not
     # uniform and also include NaN values.
 
-    pytest.importorskip('sunpy', minversion='1.0.4')
+    # The reference image was generated for sunpy 3.0.1 - it will not work with
+    # previous versions due to the bug that https://github.com/sunpy/sunpy/pull/5381
+    # fixes.
+    pytest.importorskip('sunpy', minversion='3.0.1')
     from sunpy.map import Map, all_coordinates_from_map
 
     # Load in three images from different viewpoints around the Sun

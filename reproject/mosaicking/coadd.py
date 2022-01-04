@@ -57,6 +57,9 @@ def reproject_and_coadd(input_data, output_projection, shape_out=None,
     hdu_in : int or str, optional
         If one or more items in ``input_data`` is a FITS file or an
         `~astropy.io.fits.HDUList` instance, specifies the HDU to use.
+    hdu_weights : int or str, optional
+        If one or more items in ``input_weights`` is a FITS file or an
+        `~astropy.io.fits.HDUList` instance, specifies the HDU to use.
     reproject_function : callable
         The function to use for the reprojection
     combine_function : { 'mean', 'sum', 'median' }
@@ -85,7 +88,7 @@ def reproject_and_coadd(input_data, output_projection, shape_out=None,
 
     if reproject_function is None:
         raise ValueError("reprojection function should be specified with "
-                         "the reprojection_function argument")
+                         "the reproject_function argument")
 
     # Parse the output projection to avoid having to do it for each
 
