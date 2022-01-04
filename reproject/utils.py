@@ -142,7 +142,7 @@ def _block(reproject_func, array_in, wcs_in, wcs_out_sub, shape_out, i_range, j_
            return_footprint):
     # i and j range must be passed through for multiprocessing to know where to reinsert patches
     result = reproject_func(array_in, wcs_in, wcs_out_sub,
-                         shape_out=shape_out, return_footprint=return_footprint)
+                            shape_out=shape_out, return_footprint=return_footprint)
 
     res_arr = None
     res_fp = None

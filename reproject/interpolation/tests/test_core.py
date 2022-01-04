@@ -524,9 +524,11 @@ def test_blocked_against_single(parallel, block_size):
     hdu1 = fits.open(get_pkg_data_filename('galactic_center/gc_2mass_k.fits'))[0]
     hdu2 = fits.open(get_pkg_data_filename('galactic_center/gc_msx_e.fits'))[0]
 
-    array_reference, footprint_reference = reproject_interp(hdu2, hdu1.header, parallel=False, block_size=None)
+    array_reference, footprint_reference = reproject_interp(hdu2, hdu1.header,
+                                                            parallel=False, block_size=None)
 
-    array_test, footprint_test = reproject_interp(hdu2, hdu1.header, parallel=parallel, block_size=block_size)
+    array_test, footprint_test = reproject_interp(hdu2, hdu1.header,
+                                                  parallel=parallel, block_size=block_size)
 
     np.testing.assert_allclose(array_test, array_reference, equal_nan=True)
     np.testing.assert_allclose(footprint_test, footprint_reference, equal_nan=True)
